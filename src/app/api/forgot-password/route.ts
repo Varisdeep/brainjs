@@ -1,7 +1,12 @@
 import { randomBytes } from "crypto";
-import clientPromise from "@/lib/mongodb";
 import { NextResponse } from "next/server";
 import sgMail from "@sendgrid/mail";
+
+// Dynamically import MongoDB client to avoid build-time issues
+const getClientPromise = async () => {
+  const { default: clientPromise } = await import("@/lib/mongodb");
+  return clientPromise;
+};
 
 // Configure SendGrid for email delivery
 const sendgridApiKey = process.env.SENDGRID_API_KEY;
@@ -15,6 +20,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Email is required." }, { status: 400 });
   }
 
+  const clientPromise = await getClientPromise();
   const client = await clientPromise;
   const db = client.db();
   const user = await db.collection("users").findOne({ email });
@@ -34,9 +40,7 @@ export async function POST(req: Request) {
     expires,
   });
 
-      // Manual override - uncomment the line you want to use
       const baseUrl = "http://localhost:3000"; // For local testing
-      // const baseUrl = "https://fullstack-nextjs-zeta-ochre.vercel.app"; // For production
   
   const resetUrl = `${baseUrl}/reset/${token}`;
   

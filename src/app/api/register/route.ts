@@ -1,7 +1,12 @@
 // API route handler for user registration
 import { hash } from "bcryptjs";
 import { NextResponse } from "next/server";
-import clientPromise from "@/lib/mongodb";
+
+// Dynamically import MongoDB client to avoid build-time issues
+const getClientPromise = async () => {
+  const { default: clientPromise } = await import("@/lib/mongodb");
+  return clientPromise;
+};
 
 // POST /api/register
 export async function POST(req: Request) {
@@ -18,6 +23,7 @@ export async function POST(req: Request) {
     }
 
     // Connect to MongoDB
+    const clientPromise = await getClientPromise();
     const client = await clientPromise;
 
     // ✅ Specify the database name

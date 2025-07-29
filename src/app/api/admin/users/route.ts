@@ -1,9 +1,14 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
-import clientPromise from "@/lib/mongodb";
 import { NextResponse } from "next/server";
 import sgMail from "@sendgrid/mail";
 import { ObjectId } from "mongodb";
+
+// Dynamically import MongoDB client to avoid build-time issues
+const getClientPromise = async () => {
+  const { default: clientPromise } = await import("@/lib/mongodb");
+  return clientPromise;
+};
 
 // Configure SendGrid for role update notifications
 const sendgridApiKey = process.env.SENDGRID_API_KEY;
@@ -17,6 +22,7 @@ export async function GET() {
   if (!session || (session.user && (session.user as UserWithRole).role !== "admin")) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
+  const clientPromise = await getClientPromise();
   const client = await clientPromise;
   const db = client.db("stockmarketDatabase");
   const users = await db
@@ -43,6 +49,7 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Admins cannot update their own role" }, { status: 400 });
   }
   
+  const clientPromise = await getClientPromise();
   const client = await clientPromise;
   const db = client.db("stockmarketDatabase");
   const user = await db.collection("users").findOne({ _id: new ObjectId(userId) });

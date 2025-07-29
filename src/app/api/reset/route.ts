@@ -1,9 +1,15 @@
 import { randomBytes } from "crypto";
 import { NextResponse } from "next/server";
-import clientPromise from "@/lib/mongodb";
+
+// Dynamically import MongoDB client to avoid build-time issues
+const getClientPromise = async () => {
+  const { default: clientPromise } = await import("@/lib/mongodb");
+  return clientPromise;
+};
 
 export async function POST(req: Request) {
   const { email } = await req.json();
+  const clientPromise = await getClientPromise();
   const client = await clientPromise;
   const db = client.db();
 

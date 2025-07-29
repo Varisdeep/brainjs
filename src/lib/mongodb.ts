@@ -1,7 +1,6 @@
 import { MongoClient } from "mongodb";
 
 // MongoDB connection configuration
-const uri = process.env.MONGODB_URI!;
 const options = {
   tls: true,
   // tlsAllowInvalidCertificates: false, // Keep false for production; uncomment to debug SSL issues only
@@ -15,19 +14,26 @@ declare global {
   var _mongoClientPromise: Promise<MongoClient> | undefined;
 }
 
-if (!process.env.MONGODB_URI) {
-  throw new Error("Please define the MONGODB_URI environment variable in .env.local");
-}
-
-if (process.env.NODE_ENV === "development") {
-  if (!global._mongoClientPromise) {
-    client = new MongoClient(uri, options);
-    global._mongoClientPromise = client.connect();
+function getMongoClient(): Promise<MongoClient> {
+  if (!process.env.MONGODB_URI) {
+    throw new Error("Please define the MONGODB_URI environment variable in .env.local");
   }
-  clientPromise = global._mongoClientPromise;
-} else {
-  client = new MongoClient(uri, options);
-  clientPromise = client.connect();
+
+  const uri = process.env.MONGODB_URI;
+
+  if (process.env.NODE_ENV === "development") {
+    if (!global._mongoClientPromise) {
+      client = new MongoClient(uri, options);
+      global._mongoClientPromise = client.connect();
+    }
+    return global._mongoClientPromise;
+  } else {
+    if (!clientPromise) {
+      client = new MongoClient(uri, options);
+      clientPromise = client.connect();
+    }
+    return clientPromise;
+  }
 }
 
-export default clientPromise;
+export default getMongoClient();

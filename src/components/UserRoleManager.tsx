@@ -15,7 +15,8 @@ interface UserRoleManagerProps {
 }
 
 export default function UserRoleManager({ currentUserId }: UserRoleManagerProps) {
-  const { data: session } = useSession();
+  // Session is used for authentication check, but we don't need the data directly
+  useSession();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);

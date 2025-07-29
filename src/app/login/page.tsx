@@ -37,7 +37,7 @@ export default function LoginPage() {
           router.push("/dashboard");
         }
       }
-    } catch (error) {
+    } catch {
       toast.error("An error occurred during login");
     } finally {
       setIsLoading(false);
@@ -48,7 +48,7 @@ export default function LoginPage() {
     setIsGoogleLoading(true);
     try {
       await signIn("google", { callbackUrl: "/dashboard" });
-    } catch (error) {
+    } catch {
       toast.error("Google sign-in failed");
       setIsGoogleLoading(false);
     }

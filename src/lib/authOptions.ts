@@ -1,9 +1,14 @@
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import { compare } from "bcryptjs";
-import clientPromise from "@/lib/mongodb";
 import type { JWT } from "next-auth/jwt";
 import type { Session, User, Account } from "next-auth";
+
+// Dynamically import MongoDB client to avoid build-time issues
+const getClientPromise = async () => {
+  const { default: clientPromise } = await import("@/lib/mongodb");
+  return clientPromise;
+};
 
 // Authentication configuration for NextAuth.js
 
@@ -17,6 +22,7 @@ export const authOptions = {
       },
       async authorize(credentials) {
         if (!credentials) throw new Error("Missing credentials");
+        const clientPromise = await getClientPromise();
         const client = await clientPromise;
         const db = client.db("stockmarketDatabase");
         const user = await db.collection("users").findOne({ email: credentials.email });
@@ -55,6 +61,7 @@ export const authOptions = {
     async jwt({ token, user, account }: { token: JWT; user?: User; account?: Account | null }) {
       // Save Google user to DB if new
       if (account && account.provider === "google" && user && user.email) {
+        const clientPromise = await getClientPromise();
         const client = await clientPromise;
         const db = client.db("stockmarketDatabase");
         const existingUser = await db.collection("users").findOne({ email: user.email });

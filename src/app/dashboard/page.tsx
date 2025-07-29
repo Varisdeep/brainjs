@@ -2,6 +2,7 @@
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import UserRoleManager from "@/components/UserRoleManager";
 import StockPredictor from "@/components/StockPredictor";
 
@@ -63,9 +64,11 @@ export default function Dashboard() {
           <div className="user-profile">
             <div className="user-avatar">
               {session.user?.image ? (
-                <img 
+                <Image 
                   src={session.user.image} 
                   alt="Profile" 
+                  width={80}
+                  height={80}
                   className="w-full h-full rounded-2xl object-cover"
                 />
               ) : (
